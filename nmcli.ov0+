@@ -1,0 +1,38 @@
+#!/bin/bash
+# Uso: nmcli.ov0+ ip_host_remoto
+# Calcula automáticamente la IP del bridge: 10.0.1.X
+# donde X es la última cifra de la IP de ens32
+
+IP_REMOTO=$1
+
+# Obtener última cifra de IP de ens32
+IP_VLAN301=$(ip addr show ens32 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)
+ULTIMA_CIFRA=$(echo $IP_VLAN301 | awk -F. '{print $4}')
+
+# IP del bridge overlay: 10.0.1.X donde X es la última cifra
+IP_BRIDGE="10.0.1.${ULTIMA_CIFRA}"
+
+# VXLAN ID: usar última cifra como ID
+VXLAN_ID=$ULTIMA_CIFRA
+
+# Crear bridge overlay
+nmcli connection add type bridge con-name overlay0-br ifname ov0-br \
+  ipv4.method manual ipv4.addresses ${IP_BRIDGE}/24 \
+  ipv6.method disabled stp no autoconnect yes
+
+# Crear interfaz VXLAN
+nmcli connection add type vxlan slave-type bridge \
+  con-name overlay0-vxlan ifname ov0-vxlan \
+  id $VXLAN_ID \
+  remote $IP_REMOTO \
+  master ov0-br
+
+echo "allow ov0-br" >> /etc/qemu/bridge.conf
+
+# Abrir puerto VXLAN
+firewall-cmd --add-port=8472/udp --permanent
+firewall-cmd --add-port=8472/udp
+
+echo "Overlay bridge ov0-br creado con IP ${IP_BRIDGE}/24"
+echo "VXLAN ID: $VXLAN_ID conectado a host remoto: $IP_REMOTO"
+

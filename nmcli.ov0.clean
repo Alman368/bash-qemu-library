@@ -1,0 +1,16 @@
+#!/bin/bash
+# Limpia overlay bridge ov0-br y mata VMs conectadas
+
+# Matar VMs conectadas a ov0-br
+kill_vms ov0-br
+
+# Borrar VXLAN primero
+nmcli connection delete overlay0-vxlan 2>/dev/null
+
+# Borrar bridge
+nmcli connection delete overlay0-br 2>/dev/null
+nmcli device delete ov0-br 2>/dev/null
+
+# Limpiar archivo bridge.conf
+sed -i '/allow ov0-br/d' /etc/qemu/bridge.conf
+

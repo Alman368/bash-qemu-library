@@ -1,0 +1,11 @@
+#!/bin/bash
+
+BR=$1
+
+if [ $# -eq 0 ]; then
+	# borramos todos los procesos qemu
+	ps aux | grep qemu-system-x86_64 | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null
+else
+	BR=$1
+	ps aux | grep qemu-system-x86_64 | grep "br=$BR" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null
+fi

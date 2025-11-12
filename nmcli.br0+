@@ -1,0 +1,22 @@
+#!/bin/bash
+# Crea bridge público br0 conectado a la red física
+# Calcula IP automáticamente: cambia 10.0 por 10.250
+
+# Obtener IP de ens32 (VLAN 301: 10.0.16.107)
+IP_VLAN301=$(ip addr show ens32 | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1)
+
+# Calcular IP de red trasera: cambiar 10.0 por 10.250
+IP_TRASERA=$(echo $IP_VLAN301 | sed 's/^10\.0\./10.250./')
+
+# Crear bridge con IP calculada
+nmcli connection add type bridge con-name bridge0 ifname br0 \
+  autoconnect yes stp no \
+  ipv4.method manual ipv4.addresses ${IP_TRASERA}/24 \
+  ipv6.method disabled
+
+nmcli connection add type bridge-slave ifname ens33 master bridge0
+
+echo "allow br0" >> /etc/qemu/bridge.conf
+
+echo "Bridge br0 creado con IP ${IP_TRASERA}/24"
+

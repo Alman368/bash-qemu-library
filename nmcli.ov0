@@ -1,0 +1,27 @@
+#!/bin/bash
+# Uso: nmcli.ov0 ip_host_remoto ip_bridge
+
+IP_REMOTO=$1
+IP_BRIDGE=$2
+
+# VXLAN ID: usar 107 (de tu ip 10.0.16.107)
+VXLAN_ID=107
+
+# Crear bridge overlay
+nmcli connection add type bridge con-name overlay0-br ifname ov0-br \
+	ipv4.method manual ipv4.addresses ${IP_BRIDGE}/24 \
+	ipv6.method disabled stp no autoconnect yes
+
+# Crear interfaz VXLAN conectada al bridge
+nmcli connection add type vxlan slave-type bridge \
+	con-name overlay0-vxlan ifname ov0-vxlan \
+	id $VXLAN_ID \
+	remote $IP_REMOTO \
+	master ov0-br
+
+echo "allow ov0-br" >> /etc/qemu/bridge.conf
+
+# Abrir puerto VXLAN en firewall
+
+firewall-cmd --add-port=8472/udp --permanent
+firewall-cmd --add-port=8472/udp

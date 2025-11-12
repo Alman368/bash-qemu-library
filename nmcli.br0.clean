@@ -1,0 +1,14 @@
+#!/bin/bash
+# Limpia bridge br0 y mata VMs conectadas
+
+# Matar VMs conectadas a br0
+kill_vms br0
+
+# Borrar conexión del slave primero
+nmcli connection delete bridge-slave-ens33 2>/dev/null
+
+# Borrar bridge
+nmcli connection delete bridge0 2>/dev/null
+nmcli device delete br0 2>/dev/null
+
+sed -i '/allow br0/d' /etc/qemu/bridge.conf

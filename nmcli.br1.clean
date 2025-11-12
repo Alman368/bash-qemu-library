@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Borramos máquinas conectadas al bridge 1
+kill_vms br1
+
+# Borramos bridge1 (switch virtual)
+nmcli connection delete bridge1 2>/dev/null # Borramos configuración
+nmcli device delete br1 2>/dev/null # Borramos dispositivo de red virtual
+
+# Limpiar archivo de configuración
+sed -i '/allow br1/d' /etc/qemu/bridge.conf

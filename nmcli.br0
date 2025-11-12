@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Crear bridge público br0 conectado a red física 
+# IP fija segúna la práctica 10.250.16.107/24
+
+nmcli connection add type bridge con-name bridge0 ifname br0 autoconnect yes stp no ipv4.method manual ipv4.addresses 10.250.16.107/24 ipv6.method disabled
+
+nmcli connection add type bridge-slave ifname ens33 master bridge0
+
+echo "allow br0" >> /etc/qemu/bridge.conf

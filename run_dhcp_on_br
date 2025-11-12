@@ -1,0 +1,10 @@
+#!/bin/bash
+
+BR=$1
+CLON=$2
+PORT=$3
+
+MAC="00:0c:29:$(openssl rand -hex 1):$(openssl rand -hex 1):$(openssl rand -hex 1)"
+
+# Lanza el servidor DHCP
+qemu-system-x86_64 -m 128M -smp 1 -nographic --enable-kvm -serial mon:telnet::$PORT,server=on,wait=off -device e1000,netdev=net0,mac=$MAC -netdev bridge,br=$BR,id=net0 $CLON &

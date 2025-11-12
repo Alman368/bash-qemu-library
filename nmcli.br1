@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Crear bridge privado br1 en el host, con ip indicada en la práctica 10.0.0.1/24
+nmcli connection add type bridge con-name bridge1 ifname br1 \
+	ipv4.method manual ipv4.addresses 10.0.0.1/24 \
+	ipv6.method disabled stp no autoconnect yes
+
+# Allow br1 on bridge.conf
+echo "allow br1" >> /etc/qemu/bridge.conf
+
+
